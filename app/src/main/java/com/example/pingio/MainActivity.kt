@@ -8,7 +8,11 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.pingio.ConfigCatManager.getWebViewUrl
+import kotlinx.coroutines.launch
+import okhttp3.internal.connection.Exchange
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
@@ -28,17 +32,35 @@ webView = findViewById<WebView>(R.id.websiteview)
             }
         }
 
-            if(checknetwork(this)){
+        lifecycleScope.launch{
+            if(checknetwork(this@MainActivity)){
                 if(ConfigCatManager.isFeatureEnabled()) {
                     refresh.isRefreshing = true
-                    webView.loadUrl("https://pingio.up.railway.app/")
+                    try {
+                        val url = getWebViewUrl()
+
+                        webView.loadUrl(url)
+
+                    }   catch (e: Exception) {
+                        refresh.isRefreshing = false
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Failed to load URL: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+
                 }else{
                     setContentView(R.layout.maintainence)
                 }
 
             }else{
-                Toast.makeText(this,"Connect To Network", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@MainActivity,"Connect To Network", Toast.LENGTH_LONG).show()
             }
+
+        }
+
+
 
 
 
